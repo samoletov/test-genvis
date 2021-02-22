@@ -1,0 +1,12 @@
+{
+  "gameId": 1234,
+  "name": "Feder vs Nadal",
+  "sets": [
+    { "p1": 6, "p2": 4 },
+    { "p1": 1, "p2": 2 }
+  ],
+  "currentGame": {
+    "p1": 30,
+    "p2": 40
+  }
+}
