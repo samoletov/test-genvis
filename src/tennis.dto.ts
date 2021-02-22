@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IGame, ISet } from './models/game';
+import { IMatch } from './models/match';
 
 export class PlayersDto {
   [key: string]: string;
 }
 
-export class CreateGameDto {
+export class CreateMatchDto {
   @ApiProperty()
   name: string;
   @ApiProperty()
@@ -20,24 +20,45 @@ export class PointDto {
   point: string;
 }
 
-export class SetDto {
-  [key: string]: number;
+export class ScoreDto {
+  [key: string]: number | string;
 }
 
-export class GameDto {
+export class MatchDto {
   @ApiProperty()
   gameId: number;
   @ApiProperty()
   name: string;
-  @ApiProperty({ type: SetDto, isArray: true })
-  sets: SetDto[];
+  @ApiProperty({ type: ScoreDto, isArray: true })
+  sets: ScoreDto[];
   @ApiProperty()
-  currentGame: ISet;
+  currentGame?: ScoreDto;
+  @ApiProperty()
+  games: ScoreDto;
 
-  constructor(game: IGame) {
-    this.gameId = game.id;
-    this.name = game.name;
-    this.sets = game.sets;
-    this.currentGame = game.currentGame;
+  constructor(match: IMatch) {
+    this.gameId = match.id;
+    this.name = match.name;
+    this.sets = match.sets;
+    this.games = match.games;
+    this.currentGame = {};
+    Object.entries(match.currentGame).map((item) => {
+      let result = 'love';
+      switch (item[1]) {
+        case 1:
+          result = '15';
+          break;
+        case 2:
+          result = '30';
+          break;
+        case 3:
+          result = '40';
+          break;
+        case 4:
+          result = 'game';
+          break;
+      }
+      this.currentGame[item[0]] = result;
+    });
   }
 }

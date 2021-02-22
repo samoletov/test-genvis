@@ -1,62 +1,59 @@
 import { Body, ClassSerializerInterceptor, Controller, Get, Param, Post, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { GamesService } from './games.service';
 import { Player } from './models/player';
-import { CreateGameDto, GameDto, PointDto } from './tennis.dto';
+import { CreateMatchDto, MatchDto, PointDto } from './tennis.dto';
+import { TennisService } from './tennis.service';
 
 @Controller()
 @ApiTags('tennis')
 @UseInterceptors(ClassSerializerInterceptor)
 export class AppController {
-  constructor(private readonly gamesService: GamesService) {}
+  constructor(private readonly tennisService: TennisService) {}
 
-  @Post('game')
+  @Post('matches')
   @ApiOperation({
     summary: 'Create game',
   })
   @ApiOkResponse({
     description: 'Game status',
-    type: GameDto,
+    type: MatchDto,
   })
-  // @ApiBody({
-  //   description: 'Workload',
-  //   type: CarDto,
-  //   isArray: true,
-  // })
-  createGame(@Body() dto: CreateGameDto): GameDto {
+  createMatch(@Body() dto: CreateMatchDto): MatchDto {
     const players = Object.entries(dto.players).map((playerData) => {
       return new Player(playerData[0], playerData[1]);
     });
-    return new GameDto(this.gamesService.create(dto.name, players));
+    return new MatchDto(this.tennisService.create(dto.name, players));
   }
 
-  @Post('game/:id')
+  @Post('matches/:id')
   @ApiOperation({
     summary: 'Add point to a game',
   })
   @ApiOkResponse({
     description: 'Game status',
-    type: GameDto,
+    type: MatchDto,
   })
-  addPoint(@Body() dto: PointDto): GameDto {
-    const game = this.gamesService.retrieve(dto.gameId);
-    const player = game.players.find((player) => player.name === dto.point);
-
-    return new GameDto(this.gamesService.addPoint(game, player));
+  addPoint(@Body() dto: PointDto): MatchDto {
+    const game = this.tennisService.retrieve(dto.gameId);
+    const player = game.players.find((player) => player.id === dto.point);
+    if (!player) {
+      throw new Error(`Player "${dto.point}" was not found in this game`);
+    }
+    return new MatchDto(this.tennisService.addPoint(game, player));
   }
 
-  @Get('game/:id')
+  @Get('matches/:id')
   @ApiOperation({
     summary: 'Get game status',
   })
   @ApiOkResponse({
     description: 'Game status',
-    type: GameDto,
+    type: MatchDto,
   })
-  result(@Param() id: number): GameDto {
-    const game = this.gamesService.retrieve(id);
+  result(@Param() id: number): MatchDto {
+    const game = this.tennisService.retrieve(id);
 
-    return new GameDto(game);
+    return new MatchDto(game);
   }
 }
